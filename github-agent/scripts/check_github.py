@@ -95,7 +95,7 @@ def main():
                     report['notes'].append('No resolvable HEAD; this may be a newly initialized repository.')
                 check('upstream', prefix + ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}'], required=False)
                 active = []
-                for marker in ('MERGE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD', 'rebase-merge', 'rebase-apply'):
+                for marker in ('MERGE_HEAD', 'CHERRY_PICK_HEAD', 'REVERT_HEAD', 'rebase-merge', 'rebase-apply', 'sequencer', 'BISECT_LOG'):
                     marker_result = run(prefix + ['rev-parse', '--git-path', marker], cwd, args.timeout)
                     if marker_result['exit_code'] == 0:
                         candidate = Path(marker_result['stdout'].strip())

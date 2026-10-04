@@ -1,6 +1,6 @@
 ---
 name: github-agent
-description: 通用 Git/GitHub 技能。Use for Git repositories, branches, commits, fetch/pull/push, forks/upstream, merge/rebase conflicts, GitHub CLI gh, issues, pull requests/reviews, Actions/CI, tags/releases, authentication and dubious ownership troubleshooting. 适用于提供终端或 GitHub MCP 的 Agent，支持 Windows PowerShell 工作流。
+description: 通用 Git/GitHub Agent 技能。Use for Git, repositories, PR/reviews, issues, search, Projects, Actions/runners, releases, rulesets, secrets/environments, Pages/deployments, Packages/GHCR, security alerts, organizations/teams, Enterprise, webhooks/apps, Discussions/Gists/Wiki, Codespaces, backups/migrations, gh CLI and REST/GraphQL/MCP. 提供按需加载的中文流程、PowerShell 示例和只读诊断。
 ---
 
 # GitHub 通用 Agent
@@ -11,15 +11,32 @@ description: 通用 Git/GitHub 技能。Use for Git repositories, branches, comm
 
 | 任务 | 参考文件 |
 | --- | --- |
-| 工具、认证、Windows、只读检查 | [环境](references/setup.md) |
-| 分支、提交、同步、推送、fork、冲突 | [Git](references/git-workflow.md) |
-| PR、Review、合并 | [PR](references/pull-requests.md) |
-| 仓库、Issue、API、MCP | [平台](references/github-platform.md) |
-| CI 失败、日志、重跑 | [Actions](references/github-actions.md) |
-| Tag、草稿、正式发布 | [发布](references/releases.md) |
-| 所有权、锁文件、403、非快进、秘密泄露 | [故障](references/troubleshooting.md) |
+| 工具、认证、多账户、Enterprise 主机、PowerShell | [环境与认证](references/setup.md) |
+| status、分支、提交、同步、推送、fork、冲突 | [Git 基本流程](references/git-workflow.md) |
+| worktree、stash、cherry-pick、bisect、LFS、子模块、历史恢复 | [Git 进阶](references/git-advanced.md) |
+| 仓库创建、配置、文件、协作者、改名、转移、归档、删除 | [仓库管理](references/repositories.md) |
+| PR 创建/更新/审查/回复/线程/合并/状态 | [PR 与 Review](references/pull-requests.md) |
+| Issue、标签、里程碑、子项、依赖、批量处理 | [Issues](references/issues.md) |
+| 代码/提交/Issue/PR 搜索、索引和结果完整性 | [搜索](references/search.md) |
+| Projects 看板、条目、字段、状态、自动化 | [Projects](references/projects.md) |
+| CI 诊断、工作流、运行、产物、缓存、Runners | [Actions](references/github-actions.md) |
+| Tag、草稿、正式/预发布、资产、下载、校验 | [Release](references/releases.md) |
+| Rulesets、分支保护、合并规则、访问权限 | [规则与权限](references/rules-permissions.md) |
+| Secrets、Variables、Environments、密钥、部署审批 | [秘密与环境](references/secrets-environments.md) |
+| Pages、域名、DNS、HTTPS、部署、回滚 | [网站与部署](references/pages-deployments.md) |
+| Packages、GHCR、包版本、发布、拉取、删除恢复 | [包与制品](references/packages.md) |
+| Dependabot、CodeQL、secret scanning、安全公告、attestation | [安全](references/security.md) |
+| 组织、团队、成员、Enterprise、SSO、SCIM、计费、账号 | [组织与企业](references/organizations-enterprise.md) |
+| Webhook、投递、签名、Apps、OAuth、MCP、扩展 | [集成](references/webhooks-apps.md) |
+| Discussions、Gists、Wiki、通知、Star、Watch、社区 | [社区与互动](references/community.md) |
+| Codespaces、devcontainer、远程开发、Copilot/Agent 任务 | [远程开发](references/codespaces.md) |
+| 备份、迁移、镜像、导出、批量操作 | [备份迁移](references/backup-migration.md) |
+| REST、GraphQL、Contents/Trees API、分页、限流、版本适配 | [API 与能力发现](references/api.md) |
+| 所有权、锁文件、403/404、非快进、网络、秘密泄露 | [故障处理](references/troubleshooting.md) |
+| 仓库/Issue/API 旧入口导航 | [平台导航](references/github-platform.md) |
+| 功能边界、流程覆盖、验证层级、未覆盖功能处理 | [覆盖说明](references/coverage.md) |
 
-不要一次加载全部参考文件。
+每次只加载任务所需的 1–3 个模块，遇到跨领域任务再追加。示例中的变量先赋实际值；命令块可能包含多个独立写操作，不得整块盲目执行。功能记录不等于工具已可用，验证范围见覆盖说明。
 
 ## 必须遵循的流程
 
@@ -52,3 +69,11 @@ PowerShell 示例的变量先替换为已核对的实际值；不照搬 Bash 的
 可选使用 scripts/check_github.py：Python 3.9+ 标准库，默认本地检查，--online 才访问 GitHub。没 Python 就用 setup.md 的命令，不必为技能安装 Python。
 
 完成标准：commit 有真实 SHA；push 核对远端 SHA；PR/Issue 核对 URL 和目标；merge 核对 merged 状态；release 区分草稿和正式。无结果、没权限、网络错误分别表述。
+
+## 未收录任务和完成判据
+
+遇到新功能、CLI 不支持的参数、Cloud/GHES 差异或不明确权限，先读取 API 模块，查本机 help 与官方文档，用最小只读请求确认能力；不猜命令或字段，不为扩大覆盖安装未知工具。认证、计划或界面限制要具体说明。
+
+每个任务报告目标对象、实际动作、对象 URL/ID 或 commit、验证结果和未完成项。保存配置、任务排队、邀请发送、部署记录创建都不等于最终效果完成。只在读回实际状态后说成功。
+
+覆盖低频功能时允许按“读取现状→查当前官方 schema→准备变更→执行→读回验证”的路径操作；不要承诺所有账户、版本和权限下都可执行。增加参考文档不能授予发布、发消息或破坏性操作的权限。

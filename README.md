@@ -6,17 +6,25 @@ A reusable Git/GitHub workflow skill for AI agents that support `SKILL.md`, with
 
 ## 功能
 
+当前提供 **24 份按需加载的参考文档**。AI 每次只需读取对应模块；入口保持简短，不把全部手册塞入每次对话。
+
 | 领域 | 内容 |
 | --- | --- |
-| Git | 仓库检查、分支、提交、同步、推送、fork/upstream、冲突与恢复 |
-| Pull Request | 创建与更新、Review 分析与修复、合并前检查 |
-| Issue | 查询、去重、创建、更新及状态管理 |
-| Actions / CI | 定位运行、分析日志、最小复现、按授权重跑 |
-| Release | Tag、发布草稿、正式发布与资产核对 |
-| 故障处理 | dubious ownership、认证、锁文件、非快进推送、代理、LFS |
-| 工作保护 | 保留已有修改和暂存内容、核对远端目标、保护凭证 |
+| Git | 基本流程、worktree、stash、cherry-pick/revert/rebase、bisect、LFS、子模块、恢复与签名 |
+| 仓库 | 创建、克隆、fork、元数据、文件、协作者、改名、转移、归档与删除 |
+| PR / Review | 创建、编辑、状态、审查、行内评论、线程、更新分支、合并与队列 |
+| Issues / 搜索 | 标签、里程碑、子项、依赖、批量处理、代码/提交/Issue/PR 搜索 |
+| Projects | 项目、条目、字段、状态，以及视图和自动化的接口路径 |
+| Actions / Release | CI 诊断、工作流、运行、缓存、产物、Runners、Tag、发布与资产 |
+| 配置与部署 | Rulesets、保护规则、Secrets、Variables、Environments、Pages、域名与部署 |
+| Packages / 安全 | GHCR、包版本、权限、Dependabot、代码/秘密扫描、安全公告、制品证明 |
+| 组织与集成 | 组织、团队、成员、Enterprise、SSO/SCIM、Webhooks、Apps、OAuth、MCP |
+| 社区与远程开发 | Discussions、Gists、Wiki、通知、Star/Watch、Codespaces、devcontainer、Agent 任务 |
+| 迁移与 API | 分类备份、恢复、迁移、REST/GraphQL、分页、限流、重试、版本适配与工具降级 |
 
-技能提供操作指引；实际操作需要 Agent 的终端工具或 GitHub 连接器。它不会自行提供 GitHub 账号、访问凭证或 MCP 服务。
+查看[功能覆盖与验证边界](github-agent/references/coverage.md)，区分有具体示例的流程、需要运行时查询 schema 的功能，以及仅提供官方入口的账号/计费等操作。
+
+技能提供操作指引；实际执行依赖 Agent 的终端或 GitHub 连接器、账号权限及平台能力。没有真实工具时不会因为安装技能而获得 GitHub 操作权限。
 
 ## 安装
 
@@ -121,19 +129,29 @@ python "$HOME\.agents\skills\github-agent\scripts\check_github.py" --path 'D:\Pr
 ## 文件组织
 
 - [`github-agent/SKILL.md`](github-agent/SKILL.md)：入口与核心工作流程。
-- [`github-agent/references/`](github-agent/references/)：按任务加载的 7 份参考文档。
+- [`github-agent/references/`](github-agent/references/)：按任务加载的 24 份参考文档。
 - [`github-agent/scripts/check_github.py`](github-agent/scripts/check_github.py)：只读检查脚本。
 - [`github-agent/agents/openai.yaml`](github-agent/agents/openai.yaml)：兼容宿主的界面元数据。
+- [`tools/validate_skill.py`](tools/validate_skill.py)：维护者使用的结构与链接检查。
+- [`tests/test_check_github.py`](tests/test_check_github.py)：只读诊断的离线回归测试。
+- [`.github/workflows/validate.yml`](.github/workflows/validate.yml)：Windows/Linux 自动检查配置。
 
 ## 验证与限制
 
-已完成技能结构、内部链接与脚本本地行为检查，包括空仓库、无仓库、无效路径、暂存/未暂存内容保留、合并状态标记、缺少 gh、参数错误及常见凭证 URL 脱敏。
+- **本地已验证：**结构、入口路由、内部文件链接和 Python 语法；14 项离线回归测试通过，覆盖空仓库、暂存/未暂存内容保留、真实合并冲突、已解决但未提交的合并、sequencer、detached HEAD、无效路径/参数、缺工具、超时及凭证脱敏。
+- **场景检查：**Projects 已有条目的状态更新，以及有旧 run、fork 代码和用户暂存修改的 CI 排查；检查操作次序和判断，不代表真实在线执行。
+- **安装：**使用 Skills CLI 1.7.0 核对项目级与隔离用户主目录的全局安装。更新后应核对完整技能目录，不只替换 SKILL.md。
+- **持续检查：**配置 Ubuntu/Windows × Python 3.9/3.13 矩阵。实际运行状态以 [Actions](https://github.com/Alethean-kaw/github-agent-skill/actions/workflows/validate.yml) 为准，配置存在不表示已经通过。
+- **未验证范围：**没有为了测试而对真实账户执行组织权限、计费、部署、删除或所有 CLI/API 写操作；Windows 的 gh 在线认证和所有宿主加载行为未做端到端验证。
 
-已使用 Skills CLI 1.7.0 从本公开仓库验证项目级和全局安装（全局测试使用隔离的用户主目录），两种安装位置均为对应的 `.agents/skills/github-agent`，10 个技能文件与源文件完整一致。
+维护者在仓库根目录运行（无需第三方 Python 依赖）：
 
-当前验证环境为 Linux；尚未完成 Windows 实机和 gh 在线认证的端到端测试。技能指令不能替代宿主权限控制，也不能保证模型始终正确执行。
+```sh
+python tools/validate_skill.py
+python -m unittest discover -s tests -v
+```
 
-这是独立的通用技能项目，不是 GitHub 或 OpenAI 的官方插件。文档引用相关官方资料，具体命令以本机版本的帮助和官方文档为准。
+官方文档核对基线为 2026-10-04；命令和接口运行时仍需检查当前 help、schema、主机版本及权限。本项目是独立通用技能，不是 GitHub 或 OpenAI 官方插件。
 
 ## 贡献与许可
 

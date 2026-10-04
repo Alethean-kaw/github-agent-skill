@@ -58,3 +58,11 @@ $body = @'
 每次关键原生命令之后立即检查 $LASTEXITCODE，失败停止后续步骤。Windows PowerShell 5.1 的 ErrorActionPreference=Stop 不能可靠代替这一步。路径使用引号与 -LiteralPath，不复用 $HOME/$Host/$PROFILE 为任务变量。Git 的 '@{upstream}' 需要引用。
 
 官方：<https://cli.github.com/manual/gh_auth_status>、<https://cli.github.com/manual/gh_auth_login>。
+
+## 多账户、Enterprise 与跨平台
+
+先核对活跃账号及目标主机，用户要求切换时使用 `gh auth switch --hostname $githubHost --user $username`，随后验证。`gh auth setup-git` 会调整 Git 凭证配置，仅在相应安装/修复任务内使用，不默认影响其他仓库。
+
+HTTPS、SSH、Deploy key、PAT、GitHub App token 具有不同权限和有效期。gh status 成功不能证明 SSH push 可用；公开读取成功不代表认证正常。必要时对确切目标做只读探测，不打印 credential helper 输出。
+
+Linux/macOS 使用对应 shell 引用和 UTF-8 文件操作；PowerShell 的 `$LASTEXITCODE`、here-string、Join-Path 不能原样当作 Bash。所有路径支持空格，不依赖终端当前目录猜仓库。检查用户真实安装目录，不假定所有宿主都使用 `.agents/skills`。

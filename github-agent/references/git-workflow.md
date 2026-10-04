@@ -5,6 +5,7 @@
 ```powershell
 git rev-parse --show-toplevel
 git status --short --branch
+git status --long
 git branch --show-current
 git branch -vv
 git remote -v
@@ -13,7 +14,7 @@ git diff --cached --stat
 git log -5 --oneline
 ```
 
-检查退出码；新空仓库没有 HEAD 是正常情况。检查 status 中的进行中操作，不能接管用户已有 merge/rebase/cherry-pick。分支名为空时检查 detached HEAD。读取贡献规则和换行配置，不为警告全局修改 core.autocrlf。
+检查退出码；新空仓库没有 HEAD 是正常情况。用长状态和 git rev-parse --git-path 定位 MERGE_HEAD、rebase-merge、rebase-apply、CHERRY_PICK_HEAD、REVERT_HEAD、sequencer 等状态。短 status 没有 U 不代表没有进行中的操作；冲突已解决但未完成提交的 merge 仍会保留 MERGE_HEAD。不能接管用户已有 merge/rebase/cherry-pick。分支名为空时检查 detached HEAD。读取贡献规则和换行配置，不为警告全局修改 core.autocrlf。
 
 修改前区分用户改动和任务改动，读取相关 diff 与未跟踪文件。需要新分支则从确认基线 `git switch -c $newBranch`；不要自动 stash、丢弃或将无关改动带进新分支。
 
