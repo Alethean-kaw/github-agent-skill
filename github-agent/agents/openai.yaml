@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub 通用助手"
+  short_description: "Manage Git, pull requests, issues, Actions and releases safely"
+  default_prompt: "使用 $github-agent 检查当前仓库，并完成我要求的 GitHub 操作。"
