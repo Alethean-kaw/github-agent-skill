@@ -20,41 +20,64 @@ A reusable Git/GitHub workflow skill for AI agents that support `SKILL.md`, with
 
 ## 安装
 
-### 下载后复制
+### 一条命令安装（推荐）
 
-1. 在本仓库选择 **Code → Download ZIP** 并解压。
-2. 将仓库中的整个 **`github-agent` 文件夹**复制到你的 Agent 支持的技能目录。
-3. 若宿主支持用户级 `.agents/skills`，Windows 下的结构应为：
+需要已安装 [Node.js](https://nodejs.org/)（包含 npm/npx）和 [Git](https://git-scm.com/downloads)，并能访问 npm 与 GitHub。当前验证的 Skills CLI 1.7.0 要求 Node.js 22.20.0 或更高版本。下面命令适用于 PowerShell、CMD、macOS 和 Linux 终端。
 
-```text
-C:\Users\你的用户名\.agents\skills\github-agent\SKILL.md
+**安装到当前项目的 `.agents/skills`**
+
+先在目标项目根目录打开终端，然后执行：
+
+```sh
+npx --yes skills@latest add Alethean-kaw/github-agent-skill --skill github-agent --agent universal --yes
 ```
 
-macOS/Linux 对应 `~/.agents/skills/github-agent/SKILL.md`。不要把仓库外层 `github-agent-skill-main` 当成技能文件夹。
+**安装到当前用户全局的 `.agents/skills`**
 
-### Git 下载（PowerShell）
+在任意目录执行：
+
+```sh
+npx --yes skills@latest add Alethean-kaw/github-agent-skill --skill github-agent --agent universal --global --yes
+```
+
+| 安装范围 | 技能入口 |
+| --- | --- |
+| 当前项目 | `<项目根目录>/.agents/skills/github-agent/SKILL.md` |
+| 全局（Windows） | `C:\Users\你的用户名\.agents\skills\github-agent\SKILL.md` |
+| 全局（macOS / Linux） | `~/.agents/skills/github-agent/SKILL.md` |
+
+- `--skill github-agent`：只安装本仓库的这个技能。
+- `--agent universal`：明确选择共享的 `.agents/skills` 安装位置，不依赖自动检测宿主。
+- `--global`：改为当前用户主目录下的全局安装；省略时安装到终端当前目录。
+- 两处 `--yes` 分别跳过 npx 下载确认和技能安装确认。
+
+安装器来自 [vercel-labs/skills](https://github.com/vercel-labs/skills)，会从本仓库读取技能，无需把本项目另外发布为 npm 包。这里的“全局”是当前用户级，不是系统所有用户；宿主仍需支持扫描该目录。
+
+**更新：**重新执行对应范围的安装命令即可从仓库获取最新版本。安装器会替换同名技能目录；如果你修改过技能文件，请先备份。
+
+### 确认安装与加载
+
+在 PowerShell 中检查项目级安装：
 
 ```powershell
-git clone https://github.com/Alethean-kaw/github-agent-skill.git
+Test-Path .\.agents\skills\github-agent\SKILL.md
 ```
 
-克隆成功后，在包含 `github-agent-skill` 的目录执行：
+检查全局安装：
 
 ```powershell
-$source = Join-Path (Get-Location) 'github-agent-skill\github-agent'
-$skillsDir = Join-Path $HOME '.agents\skills'
-$destination = Join-Path $skillsDir 'github-agent'
-if (-not (Test-Path -LiteralPath (Join-Path $source 'SKILL.md'))) {
-    throw '没有找到源技能，请确认当前目录和 git clone 的结果。'
-}
-if (Test-Path -LiteralPath $destination) {
-    throw '目标技能已存在，请先备份并检查差异，再决定如何更新。'
-}
-New-Item -ItemType Directory -Path $skillsDir -Force | Out-Null
-Copy-Item -LiteralPath $source -Destination $destination -Recurse
+Test-Path "$HOME\.agents\skills\github-agent\SKILL.md"
 ```
 
-请通过宿主的技能列表或加载日志确认识别结果。不同 Agent 的搜索目录和刷新方式可能不同；本项目不保证所有 Harness 都会自动扫描 `.agents/skills`。支持显式读取文件的 Agent 也可以直接读取 `github-agent/SKILL.md`。
+返回 `True` 表示入口文件存在。随后让 AI 工具重新加载技能，或重启并新建会话，通过宿主的技能列表或加载日志确认识别结果。不同 Agent 的搜索目录和刷新方式可能不同；本项目不保证所有 Harness 都会自动扫描 `.agents/skills`。支持显式读取文件的 Agent 也可以直接读取已安装的 `SKILL.md`。
+
+### 手动下载（备用）
+
+1. [下载 main 分支 ZIP](https://github.com/Alethean-kaw/github-agent-skill/archive/refs/heads/main.zip) 并解压；也可以在[仓库首页](https://github.com/Alethean-kaw/github-agent-skill)点击 **Code → Download ZIP**。
+2. 打开解压后的 `github-agent-skill-main`，取出其中的 **`github-agent` 子文件夹**。
+3. 将这个子文件夹放入项目的 `.agents/skills/` 或用户主目录的 `.agents/skills/`，最终入口路径应与上表一致。目标已存在时先备份再替换。
+
+ZIP 是整个仓库的源码压缩包，不能把外层 `github-agent-skill-main` 文件夹直接当成技能安装。
 
 ## 使用示例
 
@@ -105,6 +128,8 @@ python "$HOME\.agents\skills\github-agent\scripts\check_github.py" --path 'D:\Pr
 ## 验证与限制
 
 已完成技能结构、内部链接与脚本本地行为检查，包括空仓库、无仓库、无效路径、暂存/未暂存内容保留、合并状态标记、缺少 gh、参数错误及常见凭证 URL 脱敏。
+
+已使用 Skills CLI 1.7.0 从本公开仓库验证项目级和全局安装（全局测试使用隔离的用户主目录），两种安装位置均为对应的 `.agents/skills/github-agent`，10 个技能文件与源文件完整一致。
 
 当前验证环境为 Linux；尚未完成 Windows 实机和 gh 在线认证的端到端测试。技能指令不能替代宿主权限控制，也不能保证模型始终正确执行。
 
