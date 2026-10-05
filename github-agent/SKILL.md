@@ -1,11 +1,37 @@
 ---
 name: github-agent
-description: 通用 Git/GitHub Agent 技能。Use for Git, repositories, PR/reviews, issues, search, Projects, Actions/runners, releases, rulesets, secrets/environments, Pages/deployments, Packages/GHCR, security alerts, organizations/teams, Enterprise, webhooks/apps, Discussions/Gists/Wiki, Codespaces, backups/migrations, gh CLI and REST/GraphQL/MCP. 提供按需加载的中文流程、PowerShell 示例和只读诊断。
+description: 通用 Git/GitHub 工作流技能。Use when a request needs Git history/state or GitHub objects, diagnosis or workflow decisions, even without naming GitHub. 适用于“把修改提交推上去”“同步上游”“冲突了”“撤回这次提交”“提 PR/处理审查意见”“检查为什么 CI 红了”“发布新版本”“登记 bug/更新看板”，以及仓库配置、搜索、权限/认证、Secrets/Environments、Pages/部署、Packages/GHCR、安全告警、组织/团队/Enterprise、Webhooks/Apps、Discussions/Gists/Wiki、Codespaces、备份迁移和 gh/REST/GraphQL/MCP 操作。也用于判断何时 commit、PR、Issue、Release 或恢复历史。仅写代码、解释算法或阅读 GitHub 上的普通资料且不涉及这些工作时无需触发；“更新/发布/回滚”须结合当前对象判断。提供流程指引，不提供账号、权限或工具。
 ---
 
 # GitHub 通用 Agent
 
 用用户的语言回答，默认中文。这是工作流知识，不提供账户、凭证、终端或 MCP。不要把加载技能报告成已连接 GitHub。
+
+## 先判断当前任务
+
+根据用户目标、当前对象和此前上下文选择流程，不要求用户说出 Git/CLI 术语：
+
+1. 识别目标是本地版本历史、GitHub 平台对象，还是普通文件/应用功能。“推上去”在已明确仓库上下文中属于 Git；“发布文章”不能直接理解为创建 Release。
+2. “怎么做/是否应该”先给决策依据；“查看/为什么失败”先读取现状和证据；“帮我做”按已有授权执行。加载技能和识别任务均不扩大操作授权。
+3. 复用已知仓库、分支和对象编号。只有不同解释会导致不同目标或写入结果时才澄清，例如同时有部署故障和代码错误却只说“回滚”。
+4. 普通编码任务由相应开发流程处理；到提交、协作审查、CI 或发布环节再使用本技能。不要因为目录里有 `.git` 或消息里有 GitHub 链接，就自动执行认证检查、提交或推送。
+
+## 按目标选择操作时机
+
+| 用户想达到的结果 | 何时选用这条流程 | 首先判断什么 |
+| --- | --- | --- |
+| 保存一次本地改动 | 用 commit 记录一个可说明、可检查的变更；需要共享到远端时再 push | 哪些文件属于本次任务、哪些已暂存；保存文件不等于要求提交 |
+| 并行开发或准备协作 | 用分支隔离开发；需要同时保留多个工作目录时用 worktree | 是否已有合适分支、工作区是否有用户修改；不为每次小改动强建 worktree |
+| 跟上远端/上游 | 先 fetch 看差异；需要更新当前分支时再选择 merge/rebase | 工作区、分支是否已共享及项目策略；fetch 不会把远端变更合入工作区 |
+| 让别人审查或合入变更 | 需要评审/合入目标分支时创建 PR；尚未准备好合并但要协作时用草稿 PR | head/base、diff、检查状态；push 成功不代表 PR 已创建 |
+| 跟踪问题或安排工作 | 未完成的缺陷/需求用 Issue；跨任务排期和状态管理用 Projects | 是否有重复 Issue、已有项目条目，避免重复建单 |
+| 排查检查失败 | 失败来自 GitHub Actions/check 时查对应提交与 run，再定位日志 | 失败是否仍属于当前提交；单纯本地测试失败先本地调试，不先重跑 CI |
+| 撤销错误或恢复版本 | 已共享提交通常用 revert 保留历史；未共享历史调整按明确目标处理 | 是代码提交、发布资产还是线上部署要恢复；不把恢复目标默认变成 reset/强推 |
+| 交付可下载版本 | 需要明确版本标记时用 tag；需要说明/资产分发时用 Release | 目标提交、版本、资产和草稿/正式状态；提交或合并不自动意味着发版 |
+| 让网站或服务上线 | 用 Pages/部署流程改变运行环境；发布容器或包则用 Packages | 目标环境、版本和已有发布流程；Release 存在不代表已上线 |
+| 操作受阻或需要平台管理 | 确有认证/权限报错，或用户要求配置规则、组织、安全、集成等时读取对应模块 | 当前主机、对象、实际权限和最小必要变更；不因 403 就建议扩大所有权限 |
+
+具体命令、例外和权限边界按下表读取；不为了覆盖所有流程而顺序执行它们。
 
 ## 按任务读取
 
